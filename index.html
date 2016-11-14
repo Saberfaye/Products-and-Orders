@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html ng-app = 'myApp'>
+	<head>
+		<title>Products and Order</title>
+		<meta charset="utf-8">
+		<meta name="discription" content="Products and Order Page Demo Webpage for Practice.">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+		<script src = "bower_components/angular/angular.js"></script>
+
+		<script type='text/javascript'>
+			var myAppModule = angular.module('myApp', []);
+
+			myAppModule.factory('productFactory', function (){
+				var factory = {};
+				var products = [];
+
+				factory.getProducts = function (callback){
+					callback(products);
+				}
+				factory.addProduct = function (product){
+					product["quantity"] = 50;
+					products.push(product);
+				}
+				factory.deleteProduct = function (id){
+					products.splice(id, 1);
+				}
+
+				return factory;
+			});
+
+			myAppModule.controller('productsController', ['$scope', 'productFactory', function ($scope, productFactory){
+				$scope.products = [];
+
+				productFactory.getProducts(function (data){
+					$scope.products = data;
+				});
+
+				$scope.addProduct = function() {
+					var product = {};
+					product["name"] = $scope.name;
+					product["price"] = $scope.price;
+					console.log(product);
+					if(product.name && product.price) {
+						productFactory.addProduct(product);
+					}
+				};
+
+				$scope.deleteProduct = function(id) {
+					productFactory.deleteProduct(id);
+				};
+
+				$scope.propertyName = "name";
+				$scope.reverse = true;
+
+				$scope.sortBy = function(propertyName) {
+					$scope.reverse = (propertyName !== null && $scope.propertyName === propertyName) ? !$scope.reverse : false;
+					$scope.propertyName = propertyName;
+				};
+			}]);
+
+			myAppModule.controller('ordersController', ['$scope', 'productFactory', function ($scope, productFactory){
+				$scope.products = [];
+
+				productFactory.getProducts(function (data){
+					$scope.products = data;
+				});
+
+				$scope.buyProduct = function(id) {
+					var quantity = $scope.products[id].quantity;
+					if(quantity == 0) {
+						alert($scope.products[id].name + " has already sold out!")
+					}
+					else {
+						$scope.products[id].quantity--;
+					}
+				};
+
+				$scope.propertyName = "name";
+				$scope.reverse = true;
+
+				$scope.sortBy = function(propertyName) {
+					$scope.reverse = (propertyName !== null && $scope.propertyName === propertyName) ? !$scope.reverse : false;
+					$scope.propertyName = propertyName;
+				};
+
+			}]);
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<div ng-controller = "productsController" class="well">
+				<form class="form-horizontal" ng-submit="addProduct()">
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="name">Product Name:</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" name="name" placeholder="Enter Name" ng-model = "name">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="food">Product Price:</label>
+						<div class="col-sm-4">
+							<input type="number" step="any" class="form-control" name="price" placeholder="Enter Price" ng-model = "price">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-6">
+							<button type="submit" class="btn btn-info">Add Product</button>
+						</div>
+					</div>
+				</form>
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr>
+							<th ng-click="sortBy('name')">Name</th>
+							<th ng-click="sortBy('price')">Price</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="product in products | orderBy:propertyName:reverse">
+							<td>{{ product.name }}</td>
+							<td>{{ product.price }}</td>
+							<td><a class="btn btn-info" ng-click = "deleteProduct(products.indexOf(product))">Delete Product</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div ng-controller = "ordersController" class="well">
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr>
+							<th ng-click="sortBy('name')">Name</th>
+							<th ng-click="sortBy('price')">Price</th>
+							<th ng-click="sortBy('quantity')">Qty Available</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="product in products | orderBy:propertyName:reverse">
+							<td>{{ product.name }}</td>
+							<td>{{ product.price }}</td>
+							<td>{{ product.quantity }}</td>
+							<td><a class="btn btn-info" ng-click = "buyProduct(products.indexOf(product))">Buy</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
